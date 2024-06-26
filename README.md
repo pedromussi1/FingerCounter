@@ -2,7 +2,7 @@
 <h1 align="center">FingerCounter</h1>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=h8sp7vFeV7c"><img src="https://i.imgur.com/364Z23k.gif" alt="YouTube Demonstration" width="800"></a>
+  <a href="https://www.youtube.com/watch?v=h8sp7vFeV7c"><img src="https://i.imgur.com/h7dbXn8.gif" alt="YouTube Demonstration" width="800"></a>
 </p>
 
 <h2>Description</h2>
