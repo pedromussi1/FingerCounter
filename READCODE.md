@@ -27,12 +27,6 @@ The handDetector class encapsulates the hand detection and tracking functionalit
 </p>
 
 
-
-
-<p>The handDetector class initializes the MediaPipe hand tracking model with specified parameters: mode, maxHands, detectionCon, and trackCon.</p>
-
-<p>MediaPipe's hands module is configured for hand detection and tracking, and its drawing utilities are set up for visualizing the hand landmarks.</p>
-
 ```py
 import cv2
 import mediapipe as mp
@@ -55,136 +49,107 @@ class handDetector():
 
 ```
 
-<p>The findHands method processes an image to detect hands and optionally draws landmarks on the image.
+<p>The handDetector class constructor initializes the hand tracking model with the specified parameters.
 </p>
 
-<p>The image is converted to RGB format, and the hand detection model processes it to find hand landmarks.
-</p>
-
-<p>If landmarks are detected, they are drawn on the image.
-</p>
 
 ```py
-def findHands(self, img, draw=True):
-    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    self.results = self.hands.process(imgRGB)
-    if self.results.multi_hand_landmarks:
-        for handLms in self.results.multi_hand_landmarks:
-            if draw:
-                self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
-    return img
+    def findHands(self, img, draw=True):
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.results = self.hands.process(imgRGB)
+
+        if self.results.multi_hand_landmarks:
+            for handLms in self.results.multi_hand_landmarks:
+                if draw:
+                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
+        return img
+
 ```
 
-<p>The findPosition method identifies and returns the positions of the landmarks of the detected hand.</p>
+<p>The findHands method processes the input image to detect hands and optionally draw the landmarks on the image.</p>
 
 <p>It calculates the pixel coordinates of each landmark and optionally draws them on the image.
 </p>
 
 ```py
-def findPosition(self, img, handNo=0, draw=True):
-    xList = []
-    yList = []
-    bbox = []
-    self.lmList = []
-    if self.results.multi_hand_landmarks:
-        myHand = self.results.multi_hand_landmarks[handNo]
-        for id, lm in enumerate(myHand.landmark):
-            h, w, c = img.shape
-            cx, cy = int(lm.x * w), int(lm.y * h)
-            xList.append(cx)
-            yList.append(cy)
-            self.lmList.append([id, cx, cy])
+    def findPosition(self, img, handNo=0, draw=True):
+        xList = []
+        yList = []
+        bbox = []
+        self.lmList = []
+
+        if self.results.multi_hand_landmarks:
+            myHand = self.results.multi_hand_landmarks[handNo]
+
+            for id, lm in enumerate(myHand.landmark):
+                h, w, c = img.shape
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                xList.append(cx)
+                yList.append(cy)
+                self.lmList.append([id, cx, cy])
+                if draw:
+                    cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+
+            xmin, xmax = min(xList), max(xList)
+            ymin, ymax = min(yList), max(yList)
+            bbox = xmin, ymin, xmax, ymax
+
             if draw:
-                cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
-        xmin, xmax = min(xList), max(xList)
-        ymin, ymax = min(yList), max(yList)
-        bbox = xmin, ymin, xmax, ymax
+                cv2.rectangle(img, (bbox[0] - 20, bbox[1] - 20), (bbox[2] + 20, bbox[3] + 20), (0, 255, 0), 2)
+
+        return self.lmList, bbox
+
+```
+
+<p>The findPosition method retrieves the positions of the hand landmarks and optionally draws them on the image.
+</p>
+
+```py
+    def handType(self):
+        if self.results.multi_handedness:
+            for hand_info in self.results.multi_handedness:
+                if hand_info.classification[0].label == "Left":
+                    return "Left"
+                else:
+                    return "Right"
+        return "Right"  # Default to right if not detected
+
+```
+
+<p>The handType method identifies whether the detected hand is left or right.
+</p>
+
+```py
+
+    def findDistance(self, p1, p2, img, draw=True):
+        x1, y1 = self.lmList[p1][1], self.lmList[p1][2]
+        x2, y2 = self.lmList[p2][1], self.lmList[p2][2]
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+
         if draw:
-            cv2.rectangle(img, (bbox[0] - 20, bbox[1] - 20), (bbox[2] + 20, bbox[3] + 20), (0, 255, 0), 2)
-    return self.lmList, bbox
+            cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+            cv2.circle(img, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
+            cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+            cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+
+        length = math.hypot(x2 - x1, y2 - y1)
+        return length, img, [x1, y1, x2, y2, cx, cy]
+
 ```
 
-<p>The findDistance method calculates the Euclidean distance between two specified landmarks.
-</p>
+<h2>FingerCountingProject</h2>
 
-<p>It also draws lines and circles between the landmarks to visually indicate the measurement.
-</p>
-
-```py
-def findDistance(self, p1, p2, img, draw=True):
-    x1, y1 = self.lmList[p1][1], self.lmList[p1][2]
-    x2, y2 = self.lmList[p2][1], self.lmList[p2][2]
-    cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
-    length = math.hypot(x2 - x1, y2 - y1)
-    if draw:
-        cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
-        cv2.circle(img, (x1, y1), 10, (255, 0, 255), cv2.FILLED)
-        cv2.circle(img, (x2, y2), 10, (255, 0, 255), cv2.FILLED)
-        cv2.circle(img, (cx, cy), 10, (255, 0, 255), cv2.FILLED)
-    return length, img, [x1, y1, x2, y2, cx, cy]
-```
-
-<p>The fingersUp method determines which fingers are up by analyzing the positions of the landmarks.
-</p>
-
-<p>It compares the positions of the fingertip landmarks with those of their corresponding lower joints.
-</p>
-
-```py
-
-def fingersUp(self):
-    fingers = []
-    if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
-        fingers.append(1)
-    else:
-        fingers.append(0)
-    for id in range(1, 5):
-        if self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id] - 2][2]:
-            fingers.append(1)
-        else:
-            fingers.append(0)
-    return fingers
-```
-
-<h2>VolumeHandControlAdvanced</h2>
-
-<p>The script sets up webcam capture and initializes the hand detector.
-</p>
-
-<p>It configures the audio system using the pycaw library to adjust the system volume.
-</p>
-
-<p>The script initializes the webcam capture and the hand detector.
-</p>
+<p>The FingerCountringProject script captures video from the webcam and uses the handDetector class to detect hands and count fingers.</p>
 
 ```py
 import cv2
-import numpy as np
 import time
-import ctypes
-import comtypes
-from ctypes import cast, POINTER
-from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-
+import os
 import HandTrackingModule as htm
 
-cap = cv2.VideoCapture(0)
-detector = htm.handDetector(detectionCon=0.7, maxHands=1)
-
-devices = AudioUtilities.GetSpeakers()
-interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-volume = cast(interface, POINTER(IAudioEndpointVolume))
-volRange = volume.GetVolumeRange()
-minVol = volRange[0]
-maxVol = volRange[1]
-vol = 0
-volBar = 400
-volPer = 0
 ```
 
-<p>The main loop reads frames from the webcam and processes them using the hand detector.
-</p>
+<p>Imports necessary libraries and the hand tracking module.</p>
 
 <p>It identifies hand landmarks, calculates the area of the detected hand, and filters frames based on the hand size.
 </p>
