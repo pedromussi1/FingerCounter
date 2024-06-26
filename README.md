@@ -7,13 +7,13 @@
 
 <h2>Description</h2>
 
-<p>The goal of this project was to develop a program that used AI to recognize human hands through feedback of a webcamera and use that to control audio volume of the computer. This worked by identifying points in the hand for discerning between different fingers, and using that information to change the volume of the computer as we judged best.</p>
+<p>The goal of this project was to develop a program that used AI to recognize human hands through feedback of a webcamera and recognize how many fingers were being help up. This worked by identifying points in the hand and determining based on each finger if the tip of the finger was higher that another point of the finger.</p>
 
 <h2>Languages and Utilities Used</h2>
 
 <ul>
   <li><b>Python</b></li>
-  <li><b>Mediapipe</b></li>
+  <li><b>MediaPipe</b></li>
   <li><b>OpenCV</b></li>
 </ul>
 
@@ -30,7 +30,7 @@
 
 <h2>Project Walk-through</h2>
 
-<p>Download files, install OpenCV and mediapipe into Python Interpreter. Run VolumeHandControlAdvanced.py file.</p>
+<p>Download files, install OpenCV and mediapipe into Python Interpreter. Run FingerCountingProject.py file.</p>
 
 <h3>Hand Tracking</h3>
 
@@ -38,7 +38,7 @@
   <kbd><img src="https://ai.google.dev/static/edge/mediapipe/images/solutions/hand-landmarks.png" alt="HandTracking"></kbd>
 </p>
 
-<p>The first step is to detect hands in the image and draw landmarks of that hands so that data can be compared and manipulated. This is possible with the help of a technology developed by Google called MediaPipe Hand Landmarker. Not only does this technology perfectly detects hands, it also adds unique points to each joint and enumerates them.  </p>
+<p>The first step is to detect hands in the image and draw landmarks of that hands so that data can be compared and manipulated. This is possible with the help of a technology developed by Google called MediaPipe Hand Landmarker. Not only does this technology perfectly detect hands, it also adds unique points to each joint and enumerates them.  </p>
 
 <h3>Manipulating Landmarks</h3>
 
@@ -46,13 +46,21 @@
   <kbd><img src="https://i.imgur.com/aV0Zl5I.png" alt="ManipulatingLandmarks"></kbd>
 </p>
 
-<p>By finding the position of each point of the hand, the program knows how to differentiate between thumb, index, middle, ring, and pinky fingers. Using this information we can create a consistent functionality for the program. Since there are multiple points in each finger, x and y axis of a finger can also be determined, thus enabling us to know if a finger is "up" or "down".</p>
+<p>Since there are multiple points in each finger, x and y axis of a finger can also be determined, thus enabling us to know if a finger is "up" or "down". In case a finger is up, it will be added to the total of fingers up.</p>
 
-<h3>Volume Setting</h3>
+<h3>Handling the thumb</h3>
 
 <p align="center">
   <kbd><img src="https://i.imgur.com/vz5C8Se.png" alt="VolumeSetting"></kbd>
 </p>
 
-<p>In our case, here is the logic I have implemented: the distance of the thumb and index finger of a hand will be calculated. The farther they are from each other, the higher the volume will be set. In order for the computer volume to be changed to said volume, the hand's pinky must be "down".</p>
+<p>An important step in the process of counting all the fingers that were up was handling how to indentify a thumb as being "up". As we all know, when showing your hand your thumb points away form the palm of your hand, but not necessarily "up" in the plane graph. That is why it has to be handled differently. In my case, I handled it by comparing it in a horizontal sense, meaning that being on the right/left of the base of the thumb. Even so, there was still the need to tackle how to change that logic between right and left hands.</p>
+
+<h3>HandType Differentiation</h3>
+
+<p align="center">
+  <kbd><img src="https://i.imgur.com/vz5C8Se.png" alt="VolumeSetting"></kbd>
+</p>
+
+<p>Luckily for us, MediaPipe has a built in function that care of that logic called handType. With handType, the program can determine if a hand is right or left, and we can identify if the thumb is up or down based on that information.</p>
 
