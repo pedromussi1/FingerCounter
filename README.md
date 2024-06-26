@@ -25,7 +25,7 @@
 </ul>
 
 <h2>
-<a href="https://github.com/pedromussi1/VolumeCV/blob/main/READCODE.md">Code Breakdown Here!</a>
+<a href="https://github.com/pedromussi1/FingerCounter/blob/main/READCODE.md">Code Breakdown Here!</a>
 </h2>
 
 <h2>Project Walk-through</h2>
