@@ -43,7 +43,7 @@
 <h3>Manipulating Landmarks</h3>
 
 <p align="center">
-  <kbd><img src="https://i.imgur.com/aV0Zl5I.png" alt="ManipulatingLandmarks"></kbd>
+  <kbd><img src="https://i.imgur.com/qBrfm5J.png" alt="ManipulatingLandmarks"></kbd>
 </p>
 
 <p>Since there are multiple points in each finger, x and y axis of a finger can also be determined, thus enabling us to know if a finger is "up" or "down". In case a finger is up, it will be added to the total of fingers up.</p>
@@ -51,7 +51,7 @@
 <h3>Handling the thumb</h3>
 
 <p align="center">
-  <kbd><img src="https://i.imgur.com/vz5C8Se.png" alt="VolumeSetting"></kbd>
+  <kbd><img src="https://i.imgur.com/eF7KLZT.png" alt="VolumeSetting"></kbd>
 </p>
 
 <p>An important step in the process of counting all the fingers that were up was handling how to indentify a thumb as being "up". As we all know, when showing your hand your thumb points away form the palm of your hand, but not necessarily "up" in the plane graph. That is why it has to be handled differently. In my case, I handled it by comparing it in a horizontal sense, meaning that being on the right/left of the base of the thumb. Even so, there was still the need to tackle how to change that logic between right and left hands.</p>
@@ -59,7 +59,7 @@
 <h3>HandType Differentiation</h3>
 
 <p align="center">
-  <kbd><img src="https://i.imgur.com/vz5C8Se.png" alt="VolumeSetting"></kbd>
+  <kbd><img src="https://i.imgur.com/8RXf0z4.png" alt="VolumeSetting"></kbd>
 </p>
 
 <p>Luckily for us, MediaPipe has a built in function that care of that logic called handType. With handType, the program can determine if a hand is right or left, and we can identify if the thumb is up or down based on that information.</p>
