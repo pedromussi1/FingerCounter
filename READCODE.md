@@ -1,12 +1,32 @@
 <h1>Code Breakdown</h1>
 
-<p>This report covers the functionality and implementation of a hand gesture-based volume control program. The program leverages computer vision and hand tracking technology to allow users to control the volume of a Windows computer using hand gestures. The main components of the program include a hand tracking module and a volume control script.</p>
+<p>The hand-tracking and finger-counting program aims to identify human hands using a webcam and determine how many fingers are being held up. This application is implemented using OpenCV for video processing and MediaPipe for hand detection and landmark recognition. The report provides an overview of the program's functionality, detailed code explanation, and potential improvements.</p>
 
 <h2>HandTrackingModule</h2>
 
 <p>
-This module is responsible for detecting and tracking hand landmarks using MediaPipe and OpenCV.
+The handDetector class encapsulates the hand detection and tracking functionalities. Key methods include:
 </p>
+
+<p>__init__: Initializes the hand detector with parameters for mode, maximum hands, detection confidence, and tracking confidence.
+</p>
+
+<p>findHands: Processes an image to detect hands and draw landmarks.
+</p>
+
+<p>findPosition: Identifies and returns the positions of hand landmarks.
+</p>
+
+<p>handType: Determines whether the detected hand is left or right.
+</p>
+
+<p>fingersUp: Determines which fingers are up based on landmark positions.
+</p>
+
+<p>findDistance: Calculates the distance between two landmarks and optionally draws this distance on the image.
+</p>
+
+
 
 
 <p>The handDetector class initializes the MediaPipe hand tracking model with specified parameters: mode, maxHands, detectionCon, and trackCon.</p>
