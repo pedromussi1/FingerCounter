@@ -49,9 +49,16 @@ class handDetector():
 
 ```
 
-<p>The handDetector class constructor initializes the hand tracking model with the specified parameters.
+<p>The handDetector class encapsulates functionalities related to hand detection and tracking using the MediaPipe framework.
 </p>
 
+<p>mode: Specifies whether the detection should be static or dynamic (default: False).</p>
+
+<p>maxHands: Maximum number of hands to detect (default: 2).</p>
+
+<p>detectionCon: Minimum confidence threshold for detecting a hand (default: 0.5).</p>
+
+<p>trackCon: Minimum confidence threshold for tracking a hand (default: 0.5).</p>
 
 ```py
     def findHands(self, img, draw=True):
@@ -68,8 +75,11 @@ class handDetector():
 
 <p>The findHands method processes the input image to detect hands and optionally draw the landmarks on the image.</p>
 
-<p>It calculates the pixel coordinates of each landmark and optionally draws them on the image.
-</p>
+<p>It calculates the pixel coordinates of each landmark and optionally draws them on the image.</p>
+
+<p>img: Input image (in BGR format).</p>
+
+<p>draw: Boolean flag to enable/disable drawing landmarks on the image (default: True).</p>
 
 ```py
     def findPosition(self, img, handNo=0, draw=True):
@@ -101,8 +111,9 @@ class handDetector():
 
 ```
 
-<p>The findPosition method retrieves the positions of the hand landmarks and optionally draws them on the image.
-</p>
+<p>The findPosition method retrieves the positions of the hand landmarks and optionally draws them on the image.</p>
+
+<p>handNo: Index of the hand to track (default: 0 for the first detected hand).</p>
 
 ```py
     def handType(self):
@@ -116,8 +127,10 @@ class handDetector():
 
 ```
 
-<p>The handType method identifies whether the detected hand is left or right.
-</p>
+<p>The handType method identifies whether the detected hand is left or right.</p>
+
+<p>Returns: "Left" if the hand is identified as left-handed, "Right" otherwise.</p>
+
 
 ```py
 
@@ -137,6 +150,10 @@ class handDetector():
 
 ```
 
+<p>Purpose: Calculates the Euclidean distance between two specified landmarks and optionally draws this distance on the image.</p>
+
+<p>p1, p2: Indices of the landmarks (points) in self.lmList.</p>
+
 <h2>FingerCountingProject</h2>
 
 <p>The FingerCountringProject script captures video from the webcam and uses the handDetector class to detect hands and count fingers.</p>
@@ -151,133 +168,73 @@ import HandTrackingModule as htm
 
 <p>Imports necessary libraries and the hand tracking module.</p>
 
-<p>It identifies hand landmarks, calculates the area of the detected hand, and filters frames based on the hand size.
-</p>
-
-<p>The script measures the distance between the thumb and index finger, maps this distance to a volume level, and adjusts the system volume accordingly.
-</p>
-
-<p>Visual feedback is provided by drawing on the webcam feed.
-</p>
 
 ```py
+wCam, hCam = 640, 480
+cap = cv2.VideoCapture(0)
+cap.set(3, wCam)
+cap.set(4, hCam)
 pTime = 0
-while True:
-    success, img = cap.read()
-    img = detector.findHands(img)
-    lmList, bbox = detector.findPosition(img, draw=True)
-    
-    if len(lmList) != 0:
-        area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]) // 100
-        
-        if 250 < area < 1000:
-            length, img, lineInfo = detector.findDistance(4, 8, img)
-            volBar = np.interp(length, [50, 200], [400, 150])
-            volPer = np.interp(length, [50, 200], [0, 100])
-            
-            smoothness = 10
-            volPer = smoothness * round(volPer / smoothness)
-            
-            fingers = detector.fingersUp()
-            if not fingers[4]:
-                volume.SetMasterVolumeLevelScalar(volPer / 100, None)
-                cv2.circle(img, (lineInfo[4], lineInfo[5]), 15, (0, 255, 0), cv2.FILLED)
-                colorVol = (0, 255, 0)
-            else:
-                colorVol = (255, 0, 0)
-    
-    cv2.rectangle(img, (50, 150), (85, 400), (255, 0, 0), 3)
-    cv2.rectangle(img, (50, int(volBar)), (85, 400), (255, 0, 0), cv2.FILLED)
-    cv2.putText(img, f'{int(volPer)} %', (40, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 3)
-    
-    cVol = int(volume.GetMasterVolumeLevelScalar() * 100)
-    cv2.putText(img, f'Vol Set: {int(cVol)}', (400, 50), cv2.FONT_HERSHEY_COMPLEX, 1, colorVol, 3)
-    
-    cTime = time.time()
-    fps = 1 / (cTime - pTime)
-    pTime = cTime
-    cv2.putText(img, f'FPS: {int(fps)}', (40, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 3)
-    
-    cv2.imshow("Img", img)
-    cv2.waitKey(1)
 
 ```
 
-<h2>Hand Tracking Module (HandTrackingModule.py):</h2>
-
-<h3>Initialization (__init__ method):</h3>
-
-<p>This method sets up the MediaPipe hands solution with specified parameters such as mode, maxHands, detectionCon, and trackCon.
+<p>Initializes the webcam settings and the frame size.
 </p>
 
-<p>The self.mpHands initializes the MediaPipe hands solution.
-</p>
+```py
+detector = htm.handDetector(detectionCon=0.75)
+tipIds = [4, 8, 12, 16, 20]
 
-<p>The self.hands object is configured with the provided parameters to detect and track hand landmarks.
-</p>
+```
 
-<p>self.mpDraw is set up to draw the detected hand landmarks.
-</p>
+<p>Creates a hand detector object and sets the tip IDs of the fingers.</p>
 
-<h3>Hand Detection (findHands method):</h3>
+```py
 
-<p>The input image is converted from BGR to RGB format.
-</p>
+while True:
+    success, img = cap.read()
+    img = detector.findHands(img)
+    lmList, bbox = detector.findPosition(img, draw=False)
 
-<p>The self.hands.process method processes the RGB image to detect hand landmarks.
-</p>
+    if len(lmList) >= 9:
+        fingers = []
+        handType = detector.handType()
 
-<p>If hand landmarks are detected, they are drawn on the image using self.mpDraw.
-</p>
+        # Thumb
+        if handType == "Right":
+            if lmList[tipIds[0]][1] < lmList[tipIds[0] - 1][1]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
+        else:  # Left hand
+            if lmList[tipIds[0]][1] > lmList[tipIds[0] - 1][1]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
 
-<h3>Position Detection (findPosition method):</h3>
+        # 4 Fingers
+        for id in range(1, 5):
+            if lmList[tipIds[id]][2] < lmList[tipIds[id]-2][2]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
 
-<p>This method iterates over the detected landmarks and calculates their pixel coordinates.
-</p>
+        totalFingers = fingers.count(1)
 
-<p>It appends the coordinates to self.lmList and optionally draws them on the image.
-</p>
+        cv2.rectangle(img, (20, 255), (170, 425), (0, 255, 0), cv2.FILLED)
+        cv2.putText(img, str(totalFingers), (45, 400), cv2.FONT_HERSHEY_PLAIN, 10, (255, 0, 0), 25)
 
-<p>The bounding box (bbox) around the hand is calculated based on the minimum and maximum coordinates of the landmarks.
-</p>
+    cTime = time.time()
+    fps = 1/(cTime-pTime)
+    pTime = cTime
 
-<h3>Distance Calculation (findDistance method):</h3>
+    # cv2.putText(img, f'FPS: {int(fps)}',(400,70), cv2.FONT_HERSHEY_PLAIN,3,(255,0,0),3)
 
-<p>This method calculates the Euclidean distance between two specified landmarks.
-</p>
+    cv2.imshow("Image", img)
+    cv2.waitKey(1)
 
-<p>It draws lines and circles between the landmarks to visually indicate the distance.
-</p>
 
-<h3>Finger Status (fingersUp method):</h3>
+```
 
-<p>This method determines the status of the fingers (up or down) by comparing the positions of the fingertip landmarks with their corresponding lower joints.
-</p>
-
-<p>It returns a list indicating the status of each finger.
-</p>
-
-<h2>Volume Control Script (VolumeHandControlAdvanced.py):</h2>
-
-<h3>Initialization:</h3>
-
-<p>The script captures video from the webcam and initializes the hand detector.</p>
-
-<p>The pycaw library is used to control the system volume. It retrieves the audio endpoint and sets up the volume control interface.</p>
-
-<p>The volume range (minVol and maxVol) is obtained from the audio endpoint.</p>
-
-<h3>Main Loop:</h3>
-
-<p>The script continuously captures frames from the webcam and processes them using the findHands and findPosition methods of the handDetector class.</p>
-
-<p>If hand landmarks are detected, the area of the bounding box around the hand is calculated.</p>
-
-<p>The script filters frames based on the hand size to ensure reliable detection.</p>
-
-<p>The distance between the thumb and index finger is measured using the findDistance method, and this distance is mapped to a volume level.</p>
-
-<p>If the pinky finger is not up, the system volume is adjusted based on the mapped volume level.</p>
-
-<p>The volume level is displayed on the webcam feed, and visual feedback is provided to the user.</p>
+<p>Continuously captures frames from the webcam (cap.read()), processes them using the handDetector class methods (findHands, findPosition), counts the number of fingers held up, calculates the frame rate (fps), and displays the results on the image.</p>
 
